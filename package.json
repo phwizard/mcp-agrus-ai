@@ -1,0 +1,46 @@
+{
+  "name": "mcp-agrus-ai",
+  "version": "0.1.0",
+  "description": "Model Context Protocol server for Agrus.ai — lets AI agents engage Agrus directly (list services, scope PoCs, query compliance positions).",
+  "type": "module",
+  "bin": {
+    "mcp-agrus-ai": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": ["dist", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "agrus",
+    "ai-consulting",
+    "ai-agents",
+    "anthropic",
+    "claude"
+  ],
+  "author": "Dappros Ltd",
+  "license": "MIT",
+  "homepage": "https://agrus.ai",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/phwizard/mcp-agrus-ai.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7"
+  }
+}
