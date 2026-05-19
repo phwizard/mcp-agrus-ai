@@ -25,7 +25,12 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci
+        # `npm install` rather than `npm ci` because Vitest pulls in oxc-parser
+        # which has platform-specific optional native deps. Lock files generated
+        # on macOS don't always include the Linux variants, so `npm ci` (strict
+        # sync check) fails. `npm install` reconciles. Both produce the same
+        # node_modules; only the strictness of the sync check differs.
+        run: npm install --no-audit --no-fund
 
       - name: Typecheck (src + api)
         run: npm run typecheck
