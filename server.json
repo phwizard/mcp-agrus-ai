@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.phwizard/mcp-agrus-ai",
+  "title": "Agrus.ai — Enterprise AI Agency",
+  "description": "Public MCP server for Agrus.ai, an AI consulting agency for regulated industries (US + Canada). Tools let AI agents list the agency's services, query its compliance position on HIPAA / SOC 2 / ISO 27001 / EU AI Act / NAIC / ABA / AML, scope a Discovery Sprint PoC, request a ballpark quote, and formally request a proposal that creates a tracked CRM lead.",
+  "version": "0.2.0",
+  "homepage": "https://agrus.ai",
+  "repository": {
+    "source": "github",
+    "url": "https://github.com/phwizard/mcp-agrus-ai"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.agrus.ai/mcp"
+    }
+  ]
+}
