@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Agrus MCP Server — mcp.agrus.ai</title>
+  <meta name="description" content="Public Model Context Protocol server for Agrus.ai — the AI agency for regulated industries. Lets AI agents engage Agrus programmatically." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://mcp.agrus.ai/" />
+  <link rel="preconnect" href="https://rsms.me/" crossorigin />
+  <link rel="stylesheet" href="https://rsms.me/inter/inter.css" />
+  <meta property="og:title" content="Agrus MCP Server" />
+  <meta property="og:description" content="Public MCP server for Agrus.ai. Lets AI agents list services, scope PoCs, query compliance, request quotes and proposals." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://mcp.agrus.ai/" />
+  <meta name="twitter:card" content="summary" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A0B0D'/%3E%3Ccircle cx='16' cy='17' r='11' stroke='%23A6D34A' stroke-width='2' fill='none'/%3E%3Ccircle cx='16' cy='17' r='6' fill='%23A6D34A'/%3E%3Cpath d='M16 6 C 17 3, 20 2, 23 4' stroke='%23A6D34A' stroke-width='2' stroke-linecap='round' fill='none'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --ink: #0A0B0D;
+      --ink-700: #1D1F25;
+      --ink-600: #262932;
+      --ink-500: #3A3E4A;
+      --bone: #F2F1ED;
+      --bone-muted: #A8A6A0;
+      --bone-dim: #6E6C66;
+      --gooseberry: #A6D34A;
+      --gooseberry-100: #E6F4C7;
+      --gooseberry-200: #D2EA98;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--ink); color: var(--bone); font-family: 'Inter', system-ui, -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+    a { color: var(--gooseberry); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(166, 211, 74, 0.4); }
+    a:hover { text-decoration-color: var(--gooseberry); }
+    .wrap { max-width: 880px; margin: 0 auto; padding: 64px 24px 96px; }
+    header { display: flex; align-items: center; gap: 14px; margin-bottom: 64px; }
+    header svg { width: 36px; height: 36px; }
+    header .wordmark { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+    .badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid rgba(166, 211, 74, 0.4); background: rgba(166, 211, 74, 0.1); color: var(--gooseberry-100); font-size: 12px; font-weight: 500; margin-bottom: 24px; }
+    h1 { font-size: clamp(40px, 6vw, 64px); font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; margin: 0 0 24px; }
+    h1 .accent { color: var(--gooseberry); }
+    .lede { font-size: 22px; color: var(--bone-muted); line-height: 1.5; max-width: 640px; margin: 0 0 48px; }
+    h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin: 48px 0 16px; }
+    p { font-size: 16px; line-height: 1.65; color: rgba(242, 241, 237, 0.9); margin: 0 0 16px; max-width: 640px; }
+    code, pre { font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-size: 14px; }
+    code { background: var(--ink-700); padding: 2px 6px; border-radius: 4px; color: var(--gooseberry-100); }
+    pre { background: var(--ink-700); border: 1px solid var(--ink-600); border-radius: 8px; padding: 16px 18px; overflow-x: auto; line-height: 1.6; color: rgba(242, 241, 237, 0.92); }
+    pre .c { color: var(--bone-dim); }
+    .endpoints { display: grid; grid-template-columns: 1fr; gap: 12px; margin: 0 0 24px; }
+    .endpoints a { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px 18px; border: 1px solid var(--ink-600); border-radius: 8px; background: rgba(21, 23, 27, 0.6); text-decoration: none; color: var(--bone); transition: border-color 0.2s; }
+    .endpoints a:hover { border-color: var(--gooseberry); }
+    .endpoints .path { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 14px; color: var(--gooseberry); }
+    .endpoints .label { font-size: 14px; color: var(--bone-muted); }
+    ul.tools { list-style: none; padding: 0; margin: 0 0 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    ul.tools li { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; padding: 8px 12px; border: 1px solid var(--ink-600); border-radius: 6px; background: rgba(21, 23, 27, 0.6); color: var(--gooseberry-100); }
+    @media (max-width: 640px) {
+      ul.tools { grid-template-columns: 1fr; }
+    }
+    footer { margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--ink-600); font-size: 13px; color: var(--bone-dim); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    footer a { color: var(--bone-muted); text-decoration: none; }
+    footer a:hover { color: var(--gooseberry); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="16" cy="17" r="11" stroke="#A6D34A" stroke-width="2" fill="none" />
+        <circle cx="16" cy="17" r="6" fill="#A6D34A" />
+        <path d="M16 6 C 17 3, 20 2, 23 4" stroke="#A6D34A" stroke-width="2" stroke-linecap="round" fill="none" />
+      </svg>
+      <span class="wordmark">Agrus</span>
+    </header>
+
+    <div class="badge">MCP Server · Public · v0.2.0</div>
+    <h1>Built for AI agents to <span class="accent">engage us directly.</span></h1>
+    <p class="lede">
+      This is a Model Context Protocol server for <a href="https://agrus.ai">Agrus.ai</a> &mdash;
+      an enterprise AI agency for regulated industries. AI agents (Claude, ChatGPT, Gemini, custom)
+      can list our services, query our position on a regulatory regime, scope a Discovery Sprint,
+      request a ballpark quote, or formally request a proposal that creates a tracked lead.
+    </p>
+
+    <h2>Endpoints</h2>
+    <div class="endpoints">
+      <a href="/mcp">
+        <span class="path">POST /mcp</span>
+        <span class="label">JSON-RPC over HTTP (Streamable HTTP transport)</span>
+      </a>
+      <a href="/.well-known/mcp.json">
+        <span class="path">GET /.well-known/mcp.json</span>
+        <span class="label">Discovery manifest</span>
+      </a>
+    </div>
+
+    <h2>Tools</h2>
+    <ul class="tools">
+      <li>list_services</li>
+      <li>list_verticals</li>
+      <li>query_compliance_position</li>
+      <li>get_case_study</li>
+      <li>scope_poc</li>
+      <li>request_quote</li>
+      <li>request_proposal *</li>
+    </ul>
+    <p style="font-size: 13px; color: var(--bone-dim); margin-top: -8px;">
+      * <code>request_proposal</code> is the only write tool &mdash; creates a HubSpot contact with
+      lead source <code>agrus_mcp</code>. The rest are read-only.
+    </p>
+
+    <h2>Use with Claude Desktop / Cursor / Continue</h2>
+    <p>Configure your MCP client to point at this endpoint:</p>
+    <pre><span class="c">{</span>
+  <span class="c">"mcpServers": {</span>
+    <span class="c">"agrus": {</span>
+      <span class="c">"url":</span> <span style="color: var(--gooseberry-200);">"https://mcp.agrus.ai/mcp"</span>
+    <span class="c">}</span>
+  <span class="c">}</span>
+<span class="c">}</span></pre>
+
+    <h2>Try it from a terminal</h2>
+    <pre><span class="c">curl -sS https://mcp.agrus.ai/mcp \
+  -H "Content-Type: application/json" \
+  -H "Mcp-Protocol-Version: 2024-11-05" \
+  -d '{"jsonrpc":"2.0","id":1,"method":"tools/list"}'</span></pre>
+
+    <p>
+      The server is open-source at <a href="https://github.com/phwizard/mcp-agrus-ai">github.com/phwizard/mcp-agrus-ai</a>
+      under MIT. Authentication is open today; rate-limited per IP. Email
+      <a href="mailto:hello@agrus.ai">hello@agrus.ai</a> if you hit limits or want a dedicated key.
+    </p>
+
+    <footer>
+      <span>&copy; 2026 Dappros Ltd</span>
+      <span>
+        <a href="https://agrus.ai">agrus.ai</a> &nbsp;·&nbsp;
+        <a href="https://github.com/phwizard/mcp-agrus-ai">source</a> &nbsp;·&nbsp;
+        <a href="/.well-known/mcp.json">manifest</a>
+      </span>
+    </footer>
+  </div>
+</body>
+</html>
