@@ -1,24 +1,21 @@
 /**
  * Vercel serverless entry for the Agrus MCP server.
  *
- * Uses the SDK's WebStandardStreamableHTTPServerTransport which speaks
- * fetch-style Request/Response — same shape Vercel's serverless platform
- * uses for non-Next.js projects. Runs on Node 22 so we have full Web APIs
- * plus access to env vars (HUBSPOT_PRIVATE_APP_TOKEN) that the write
- * tools need.
+ * Bridges Vercel's Node-style (req, res) signature to the SDK's
+ * WebStandardStreamableHTTPServerTransport, which speaks Web Request/Response.
  *
- * Each HTTP request creates a fresh McpServer + stateless transport.
- * Stateless mode keeps things serverless-friendly: no session state to
- * persist between function invocations. Cost: clients can't use the
- * resumable SSE features, which we don't need for our read-mostly tool set.
+ * We avoid Edge runtime because the MCP SDK currently uses Node-only modules
+ * that the Edge bundler rejects. Node runtime gives us full SDK access plus
+ * env vars (HUBSPOT_PRIVATE_APP_TOKEN) that the write tools need.
  */
 
+import type { IncomingMessage, ServerResponse } from "node:http";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { tools } from "../src/tools/index.js";
 
 export const config = {
-  runtime: "nodejs22.x",
+  runtime: "nodejs",
   maxDuration: 30,
 };
 
@@ -30,7 +27,6 @@ async function buildServer(): Promise<McpServer> {
     { name: SERVER_NAME, version: SERVER_VERSION },
     { capabilities: { tools: {} } },
   );
-
   for (const tool of tools) {
     server.registerTool(
       tool.name,
@@ -42,12 +38,66 @@ async function buildServer(): Promise<McpServer> {
       tool.handler as Parameters<typeof server.registerTool>[2],
     );
   }
-
   return server;
 }
 
-function corsHeaders(req: Request): Record<string, string> {
-  const origin = req.headers.get("origin") ?? "*";
+// Build a Web `Request` from a Node IncomingMessage. We buffer the body
+// upfront — fine for JSON-RPC payloads which are small.
+async function toWebRequest(req: IncomingMessage): Promise<Request> {
+  const host = (req.headers.host as string | undefined) ?? "mcp.agrus.ai";
+  const proto = (req.headers["x-forwarded-proto"] as string | undefined) ?? "https";
+  const fullUrl = `${proto}://${host}${req.url ?? "/"}`;
+
+  // Collect Node headers into a Web Headers
+  const webHeaders = new Headers();
+  for (const [k, v] of Object.entries(req.headers)) {
+    if (v === undefined) continue;
+    if (Array.isArray(v)) {
+      for (const item of v) webHeaders.append(k, String(item));
+    } else {
+      webHeaders.set(k, String(v));
+    }
+  }
+
+  const init: RequestInit = { method: req.method ?? "GET", headers: webHeaders };
+  if (req.method && !["GET", "HEAD", "OPTIONS"].includes(req.method)) {
+    const chunks: Buffer[] = [];
+    for await (const chunk of req) {
+      chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : (chunk as Buffer));
+    }
+    init.body = Buffer.concat(chunks);
+    // @ts-expect-error -- duplex is required when sending a body with Web fetch in Node
+    init.duplex = "half";
+  }
+
+  return new Request(fullUrl, init);
+}
+
+// Pipe a Web Response back to the Node ServerResponse.
+async function sendWebResponse(webRes: Response, res: ServerResponse): Promise<void> {
+  res.statusCode = webRes.status;
+  webRes.headers.forEach((value, key) => {
+    // Skip headers Node will set itself or that are SSE-incompatible
+    if (key.toLowerCase() === "transfer-encoding") return;
+    res.setHeader(key, value);
+  });
+
+  if (!webRes.body) {
+    res.end();
+    return;
+  }
+
+  const reader = webRes.body.getReader();
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    res.write(value);
+  }
+  res.end();
+}
+
+function corsHeaders(originHeader: string | string[] | undefined): Record<string, string> {
+  const origin = Array.isArray(originHeader) ? originHeader[0] : originHeader ?? "*";
   return {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
@@ -57,62 +107,70 @@ function corsHeaders(req: Request): Record<string, string> {
   };
 }
 
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
+  const origin = req.headers.origin as string | undefined;
+  const cors = corsHeaders(origin);
+
   if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders(req) });
+    for (const [k, v] of Object.entries(cors)) res.setHeader(k, v);
+    res.statusCode = 204;
+    res.end();
+    return;
   }
 
   // Friendly GET on the root tells humans + scrapers what this is.
   // Real MCP clients always send Mcp-Protocol-Version + Accept: text/event-stream.
-  const url = new URL(req.url);
-  const accept = req.headers.get("accept") ?? "";
+  const accept = (req.headers.accept as string | undefined) ?? "";
   if (
     req.method === "GET" &&
-    !req.headers.has("Mcp-Protocol-Version") &&
-    !accept.includes("text/event-stream") &&
-    (url.pathname === "/mcp" || url.pathname === "/api/mcp")
+    !req.headers["mcp-protocol-version"] &&
+    !accept.includes("text/event-stream")
   ) {
-    return Response.json(
-      {
-        name: SERVER_NAME,
-        version: SERVER_VERSION,
-        description: "Agrus.ai MCP server — public, read-only + 2 write tools.",
-        protocol: "MCP Streamable HTTP",
-        tools: tools.map((t) => t.name),
-        manifest: "https://mcp.agrus.ai/.well-known/mcp.json",
-        docs: "https://github.com/phwizard/mcp-agrus-ai",
-        site: "https://agrus.ai",
-      },
-      { headers: corsHeaders(req) },
+    for (const [k, v] of Object.entries(cors)) res.setHeader(k, v);
+    res.setHeader("Content-Type", "application/json; charset=utf-8");
+    res.end(
+      JSON.stringify(
+        {
+          name: SERVER_NAME,
+          version: SERVER_VERSION,
+          description: "Agrus.ai MCP server — public, 6 read tools + 1 write tool.",
+          protocol: "MCP Streamable HTTP (2024-11-05)",
+          tools: tools.map((t) => t.name),
+          manifest: "https://mcp.agrus.ai/.well-known/mcp.json",
+          docs: "https://github.com/phwizard/mcp-agrus-ai",
+          site: "https://agrus.ai",
+        },
+        null,
+        2,
+      ),
     );
+    return;
   }
 
   try {
     const server = await buildServer();
-    // Stateless mode: no session ID — each request fully self-contained.
-    // sessionIdGenerator: undefined → stateless per SDK docs.
     const transport = new WebStandardStreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
     });
     await server.connect(transport);
-    const response = await transport.handleRequest(req);
 
-    // Merge CORS onto the SDK response
-    const merged = new Headers(response.headers);
-    for (const [k, v] of Object.entries(corsHeaders(req))) {
-      merged.set(k, v);
+    const webRequest = await toWebRequest(req);
+    const webResponse = await transport.handleRequest(webRequest);
+
+    // Layer CORS onto the SDK response
+    for (const [k, v] of Object.entries(cors)) {
+      if (!webResponse.headers.has(k)) webResponse.headers.set(k, v);
     }
-    return new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: merged,
-    });
+    await sendWebResponse(webResponse, res);
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error("[agrus mcp] handler error:", err);
-    return Response.json(
-      {
+    for (const [k, v] of Object.entries(cors)) res.setHeader(k, v);
+    res.setHeader("Content-Type", "application/json");
+    res.statusCode = 500;
+    res.end(
+      JSON.stringify({
         jsonrpc: "2.0",
         error: {
           code: -32603,
@@ -120,8 +178,7 @@ export default async function handler(req: Request): Promise<Response> {
           data: err instanceof Error ? err.message : String(err),
         },
         id: null,
-      },
-      { status: 500, headers: corsHeaders(req) },
+      }),
     );
   }
 }
