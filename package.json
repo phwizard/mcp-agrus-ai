@@ -1,6 +1,6 @@
 {
   "name": "mcp-agrus-ai",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Model Context Protocol server for Agrus.ai — lets AI agents engage Agrus directly (list services, scope PoCs, query compliance positions).",
   "type": "module",
   "bin": {
@@ -12,7 +12,7 @@
     "build": "tsc",
     "dev": "tsx watch src/index.ts",
     "start": "node dist/index.js",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -p tsconfig.check.json",
     "prepare": "npm run build"
   },
   "keywords": [

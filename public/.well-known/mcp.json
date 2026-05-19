@@ -1,0 +1,38 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/mcp.json",
+  "name": "agrus",
+  "title": "Agrus.ai — Enterprise AI Agency",
+  "version": "0.2.0",
+  "description": "Public MCP server for Agrus.ai — a front-deployed AI agency for regulated industries (US + Canada). AI agents can list services, query Agrus's position on a regulatory regime, scope a Discovery Sprint, request a ballpark quote, or formally request a proposal that creates a tracked lead in Agrus's CRM.",
+  "site": "https://agrus.ai",
+  "source": "https://github.com/phwizard/mcp-agrus-ai",
+  "license": "MIT",
+  "transports": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.agrus.ai/mcp"
+    }
+  ],
+  "tools": {
+    "read_only": [
+      "list_services",
+      "list_verticals",
+      "query_compliance_position",
+      "get_case_study",
+      "scope_poc",
+      "request_quote"
+    ],
+    "write": [
+      "request_proposal"
+    ]
+  },
+  "auth": {
+    "required": false,
+    "notes": "All tools are open. request_proposal records the requester's email in Agrus's HubSpot CRM with lead source 'agrus_mcp'. We rate-limit per IP and reserve the right to introduce email verification (OTP) later."
+  },
+  "rate_limits": {
+    "per_ip_per_minute": 30,
+    "notes": "Soft limits. Genuine usage by enterprise AI assistants is welcome; sustained abuse will be blocked."
+  },
+  "contact": "hello@agrus.ai"
+}

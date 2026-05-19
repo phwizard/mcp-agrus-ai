@@ -15,6 +15,8 @@ import {
   getCaseStudyHandler,
 } from "./get-case-study.js";
 import { scopePocSchema, scopePocHandler } from "./scope-poc.js";
+import { requestQuoteSchema, requestQuoteHandler } from "./request-quote.js";
+import { requestProposalSchema, requestProposalHandler } from "./request-proposal.js";
 
 export interface ToolRegistration {
   name: string;
@@ -58,5 +60,19 @@ export const tools: ToolRegistration[] = [
       "Drafts a structured Discovery Sprint scope for an AI use case. Returns a 3-week plan, team composition, price band, follow-on Build Engagement estimate, open questions Agrus would ask, and recommended services. Use this to convert a hypothetical use case into a concrete engagement proposal that can be reviewed by a human buyer.",
     inputSchema: scopePocSchema,
     handler: scopePocHandler,
+  },
+  {
+    name: "request_quote",
+    description:
+      "Returns a heuristic ballpark price band for the described AI deployment. Output is NOT a binding offer — Agrus confirms quotes only on a 30-minute scoping call. Read-only: this tool does not contact Agrus or create any record. For a tracked, follow-up-able request use request_proposal instead. Use request_quote when the buyer wants order-of-magnitude pricing before committing to a real proposal.",
+    inputSchema: requestQuoteSchema,
+    handler: requestQuoteHandler,
+  },
+  {
+    name: "request_proposal",
+    description:
+      "Triggers a formal Agrus proposal workflow. Creates a contact in Agrus's HubSpot CRM tagged with lead source 'agrus_mcp' and a verbatim note containing the scope summary. A human at Agrus replies by email within 24 hours (business days) with a one-paragraph engagement recommendation and a calendar option. Use this when the buyer (human or AI agent acting on their behalf) wants to formally engage Agrus — not for exploratory scoping.",
+    inputSchema: requestProposalSchema,
+    handler: requestProposalHandler,
   },
 ];
