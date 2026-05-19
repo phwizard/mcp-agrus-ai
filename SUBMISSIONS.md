@@ -5,8 +5,8 @@ Tracking sheet for getting `mcp-agrus-ai` listed across MCP-server directories.
 | Directory | Status | Method | Action owner |
 |---|---|---|---|
 | [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers) | ⏳ PR opened | GitHub PR | Wait for merge |
-| [MCP Server Registry](https://registry.modelcontextprotocol.io/) (Anthropic) | 📝 Prepared | `mcp-publisher` CLI | **CEO — ~5 min** |
-| [mcpservers.org](https://mcpservers.org/submit) (wong2's list) | 📝 Pending | Web form | **CEO — ~3 min** |
+| [MCP Server Registry](https://registry.modelcontextprotocol.io/) (Anthropic) | ✅ Published | `mcp-publisher` CLI | Done 260519 |
+| [mcpservers.org](https://mcpservers.org/submit) (wong2's list) | ✅ Submitted | Web form | Done 260519 |
 | [mcp.so](https://mcp.so/) | 📝 Pending | Web form | **CEO — ~3 min** |
 | [Smithery](https://smithery.ai/) | 📝 Pending | Web form / GitHub OAuth | **CEO — ~5 min** |
 | [Glama](https://glama.ai/mcp/servers) | 📝 Pending | Auto-indexed from GitHub | Likely automatic once popular |
@@ -17,11 +17,19 @@ Tracking sheet for getting `mcp-agrus-ai` listed across MCP-server directories.
 
 PR: https://github.com/punkpeye/awesome-mcp-servers/pull/6614
 
-Entry added in the **Marketing** section, alphabetically between `pghdma` and `pickelfintech`. No action needed; wait for maintainer review.
+Entry added in **Other Tools and Integrations**, alphabetically between `pierrebrunelle` and `PSPDFKit`. (Originally placed in Marketing; moved after CEO feedback that the Marketing section is mostly martech tools, not service-discovery surfaces like ours.) No action needed; wait for maintainer review.
 
 ---
 
-## 📝 MCP Server Registry (Anthropic)
+## ✅ MCP Server Registry (Anthropic) — published 260519
+
+Live at https://registry.modelcontextprotocol.io/v0/servers/io.github.phwizard/mcp-agrus-ai
+
+Version 0.2.0 published via `mcp-publisher publish`. Confirmed queryable via the registry API. **To update later** (new tools, version bump): edit `server.json`, increment `version`, re-run `mcp-publisher publish`. May need to re-login first (tokens are short-lived) via `mcp-publisher login github`.
+
+---
+
+## 📝 (Reference) Original publishing steps
 
 This is the most important one — Anthropic's canonical MCP registry. Listed at https://registry.modelcontextprotocol.io and surfaced inside Claude Desktop's "browse MCP servers" UI.
 
