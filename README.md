@@ -83,7 +83,27 @@ printf '%s\n' \
   | node dist/index.js
 ```
 
-You should see the protocol handshake and a JSON-RPC response listing all 5 tools.
+You should see the protocol handshake and a JSON-RPC response listing all 7 tools (5 read + 2 write).
+
+## Development
+
+```bash
+npm test            # run the full test suite once (~250ms, 86 tests)
+npm run test:watch  # watch mode for active development
+npm run typecheck   # strict TypeScript check across src/ + api/
+npm run build       # compile to dist/
+npm run verify      # typecheck + test + build, in that order
+```
+
+The suite covers content integrity (slug uniqueness, enum coverage),
+each of the 7 tool handlers (happy paths + schema-rejection paths), the
+HubSpot client (mocked `fetch` exercising the upsert POST → 409-fallback
+GET → PATCH chain), and a full end-to-end MCP protocol handshake using
+the SDK's `InMemoryTransport` (verifies the same code that runs over
+stdio and over HTTP works in-process).
+
+GitHub Actions runs `npm run verify` on every push to `main` and on
+every PR — see `.github/workflows/test.yml`.
 
 ## Architecture
 
