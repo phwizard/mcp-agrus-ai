@@ -1,5 +1,6 @@
 # mcp-agrus-ai
 
+[![Test](https://github.com/phwizard/mcp-agrus-ai/actions/workflows/test.yml/badge.svg)](https://github.com/phwizard/mcp-agrus-ai/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node](https://img.shields.io/badge/node-%3E%3D20-brightgreen)](#requirements)
 [![MCP](https://img.shields.io/badge/MCP-2024--11--05-blue)](https://modelcontextprotocol.io)
