@@ -43,11 +43,48 @@ The built entry point is `dist/index.js` (executable, `#!/usr/bin/env node` sheb
 
 ### From npm
 
-Coming in Phase 2 (we'll publish as `@agrus/mcp-server`).
+```bash
+npx -y mcp-agrus-ai
+```
 
-## Use with Claude Desktop
+No global install needed. `npx` fetches the latest published version and runs it over stdio.
 
-Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_desktop_config.json` on macOS):
+## Three ways to use this server
+
+### 1. Hosted (recommended)
+
+The server is publicly hosted at `https://mcp.agrus.ai/mcp` (Streamable HTTP transport). No install required. Point any MCP client that supports remote URL transports at:
+
+```json
+{
+  "mcpServers": {
+    "agrus": {
+      "url": "https://mcp.agrus.ai/mcp"
+    }
+  }
+}
+```
+
+### 2. Local stdio via npx
+
+For Claude Desktop and other clients that prefer stdio:
+
+```json
+{
+  "mcpServers": {
+    "agrus": {
+      "command": "npx",
+      "args": ["-y", "mcp-agrus-ai"]
+    }
+  }
+}
+```
+
+Claude Desktop config path on macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`.
+
+### 3. Local stdio from source
+
+For development against a local checkout:
 
 ```json
 {
@@ -60,7 +97,7 @@ Add to your Claude Desktop config (`~/Library/Application Support/Claude/claude_
 }
 ```
 
-Restart Claude Desktop. The five Agrus tools will be available in any conversation — try:
+Restart your MCP client after editing the config. The seven Agrus tools will be available in any conversation. Try:
 
 > *Use the agrus MCP to query Agrus's position on HIPAA for an AI agent that drafts clinical notes against a patient's EHR.*
 
@@ -70,7 +107,7 @@ Restart Claude Desktop. The five Agrus tools will be available in any conversati
 
 ## Use with other MCP clients
 
-Anything that speaks MCP stdio works. Point the client at `node /absolute/path/to/dist/index.js`. Tool discovery is automatic via `tools/list`.
+Anything that speaks MCP stdio or Streamable HTTP works. For remote use, the canonical endpoint is `https://mcp.agrus.ai/mcp` and the discovery manifest sits at `https://mcp.agrus.ai/.well-known/mcp.json`.
 
 ## Test the server directly
 

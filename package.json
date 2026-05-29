@@ -1,7 +1,8 @@
 {
   "name": "mcp-agrus-ai",
   "version": "0.2.0",
-  "description": "Model Context Protocol server for Agrus.ai — lets AI agents engage Agrus directly (list services, scope PoCs, query compliance positions).",
+  "description": "Model Context Protocol server for Agrus.ai. Lets AI agents engage the agency directly: list services, query compliance positions on HIPAA / SOC 2 / ISO 27001 / EU AI Act / NAIC / ABA / AML, scope a PoC, request a quote, or formally request a proposal.",
+  "mcpName": "io.github.phwizard/mcp-agrus-ai",
   "type": "module",
   "bin": {
     "mcp-agrus-ai": "dist/index.js"
@@ -21,7 +22,8 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "verify": "npm run typecheck && npm run test && npm run build",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run verify"
   },
   "keywords": [
     "mcp",

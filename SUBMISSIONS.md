@@ -4,12 +4,13 @@ Tracking sheet for getting `mcp-agrus-ai` listed across MCP-server directories.
 
 | Directory | Status | Method | Action owner |
 |---|---|---|---|
-| [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers) | ⏳ PR opened | GitHub PR | Wait for merge |
-| [MCP Server Registry](https://registry.modelcontextprotocol.io/) (Anthropic) | ✅ Published | `mcp-publisher` CLI | Done 260519 |
+| npm | 📝 Prepared | `npm publish` | **CEO, ~3 min** (unblocks Glama indexing + adds stdio install path) |
+| [punkpeye/awesome-mcp-servers](https://github.com/punkpeye/awesome-mcp-servers) | ⏳ PR open, triage-nudge 260527 | GitHub PR | Needs Glama badge before merge |
+| [MCP Server Registry](https://registry.modelcontextprotocol.io/) (Anthropic) | ✅ Published | `mcp-publisher` CLI | Done 260519; re-publish after npm to add `packages` block |
 | [mcpservers.org](https://mcpservers.org/submit) (wong2's list) | ✅ Submitted | Web form | Done 260519 |
-| [mcp.so](https://mcp.so/) | 📝 Pending | Web form | **CEO — ~3 min** |
-| [Smithery](https://smithery.ai/) | 📝 Pending | Web form / GitHub OAuth | **CEO — ~5 min** |
-| [Glama](https://glama.ai/mcp/servers) | 📝 Pending | Auto-indexed from GitHub | Likely automatic once popular |
+| [mcp.so](https://mcp.so/) | ✅ Submitted | Web form | Done 260519 |
+| [Smithery](https://smithery.ai/) | ✅ Submitted | Web form / GitHub OAuth | Done 260519 (CEO) |
+| [Glama](https://glama.ai/mcp/servers) | 📝 Pending | Auto-index, fallback web form | Auto-index not yet hit (260528, 404). npm publish should accelerate; failing that, manual submit |
 
 ---
 
@@ -128,8 +129,102 @@ A Glama badge will then become available to add to the README and to listings on
 
 ---
 
-## After everything is submitted
+## 📝 npm publish (unblocks Glama indexing)
 
-Update this table back at the top with statuses. The combined effect of these listings (especially the Anthropic registry + Smithery + punkpeye list) is what makes the server discoverable to buyer-side AI agents browsing MCP servers in 2026.
+`mcp-agrus-ai` is registered nowhere on npm yet but the unscoped name is free (verified 260519). Publishing as `mcp-agrus-ai` (unscoped) gives us:
 
-Time investment: ~20 minutes total of CEO time across all five remaining submissions.
+1. A `npx -y mcp-agrus-ai` install path for Claude Desktop users who want stdio
+2. A signal Glama uses to auto-index (their pipeline prefers npm-published or Dockerfile-bearing servers)
+3. An eventual `packages` block in the registry `server.json` alongside the existing `remotes` block
+
+### Prep (done by Claude on 260529)
+
+- `package.json`: `mcpName: "io.github.phwizard/mcp-agrus-ai"` for Registry verification of the package
+- `package.json`: `prepublishOnly: "npm run verify"` so the publish auto-runs typecheck + 86 tests + build first
+- `package.json`: description rewritten to cover the full tool surface
+- README: install section now shows three paths (hosted remote, npx stdio, source stdio)
+- `npm pack --dry-run` confirms the tarball is 36 KB, 63 files, contains only `dist/` + README + LICENSE + package.json. No secrets, no test files.
+
+### CEO publish steps (about 3 minutes)
+
+```bash
+cd /Users/phwizard/git/a1/ethora-bdsm/product/mcp-agrus-ai
+
+# 1. Verify everything still builds and tests pass
+npm run verify
+# (this also runs automatically as prepublishOnly; running manually first is faster feedback)
+
+# 2. Authenticate to npm
+npm login
+# Browser-based login; you may already be logged in
+
+# 3. Publish (unscoped public package)
+npm publish
+
+# 4. Verify the listing
+npm view mcp-agrus-ai
+# Should show v0.2.0, the description, and the bin entry
+
+# 5. Try the install path
+npx -y mcp-agrus-ai
+# Should start the stdio server. Ctrl-C to exit.
+```
+
+### Post-publish: update server.json with a packages block
+
+Once `npm view mcp-agrus-ai` confirms the package is live, add it to `server.json` so the MCP Registry surfaces both paths:
+
+```json
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.phwizard/mcp-agrus-ai",
+  "title": "Agrus.ai — Enterprise AI Agency",
+  "description": "AI consulting agency for regulated industries. Scope a PoC, query compliance, request a proposal.",
+  "version": "0.2.0",
+  "homepage": "https://agrus.ai",
+  "repository": { "source": "github", "url": "https://github.com/phwizard/mcp-agrus-ai" },
+  "remotes": [
+    { "type": "streamable-http", "url": "https://mcp.agrus.ai/mcp" }
+  ],
+  "packages": [
+    {
+      "registry_name": "npm",
+      "name": "mcp-agrus-ai",
+      "version": "0.2.0",
+      "runtime_hint": "npx"
+    }
+  ]
+}
+```
+
+Then re-publish to the Registry:
+
+```bash
+mcp-publisher login github   # may have expired; re-login fast
+mcp-publisher publish
+```
+
+### Post-publish: kick Glama
+
+1. Open https://glama.ai/mcp/servers
+2. Look for an "Add server" / "Submit" link (top right, usually)
+3. Paste the GitHub URL `https://github.com/phwizard/mcp-agrus-ai`
+4. Glama detects the npm package + `server.json` + README + CI badge and auto-fills
+
+Glama's score badge URL becomes available within minutes of indexing:
+
+```
+https://glama.ai/mcp/servers/phwizard/mcp-agrus-ai/badges/score.svg
+```
+
+Once it 200s, add it to the punkpeye PR entry (the maintainer's triage-nudge on 260527 asked for exactly this). The edit to PR #6614 should use `gh api -X PATCH repos/punkpeye/awesome-mcp-servers/pulls/6614 -f body=...` rather than `gh pr edit --body`, which silently fails when Projects-classic GraphQL deprecation warnings interfere (see `feedback_gh_pr_edit_silent_fail`).
+
+---
+
+## Time budget
+
+- npm publish + register: 3 minutes (CEO)
+- Glama submit + indexing wait: 5 minutes active + auto
+- PR badge edit: 2 minutes (Claude can do this once Glama indexes)
+
+Total to clear the open submissions: about 10 minutes CEO time.

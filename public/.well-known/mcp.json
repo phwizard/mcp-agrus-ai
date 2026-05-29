@@ -1,9 +1,9 @@
 {
   "$schema": "https://modelcontextprotocol.io/schemas/mcp.json",
   "name": "agrus",
-  "title": "Agrus.ai — Enterprise AI Agency",
+  "title": "Agrus.ai: Enterprise AI Agency",
   "version": "0.2.0",
-  "description": "Public MCP server for Agrus.ai — a front-deployed AI agency for regulated industries (US + Canada). AI agents can list services, query Agrus's position on a regulatory regime, scope a Discovery Sprint, request a ballpark quote, or formally request a proposal that creates a tracked lead in Agrus's CRM.",
+  "description": "Public MCP server for Agrus.ai, a front-deployed AI agency for regulated industries (US + Canada). AI agents can list services, query Agrus's position on a regulatory regime, scope a Discovery Sprint, request a ballpark quote, or formally request a proposal that creates a tracked lead in Agrus's CRM.",
   "site": "https://agrus.ai",
   "source": "https://github.com/phwizard/mcp-agrus-ai",
   "license": "MIT",
